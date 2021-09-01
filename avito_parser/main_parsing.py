@@ -1,42 +1,41 @@
 import requests
 from math import ceil
-from statistics import median
 from bs4 import BeautifulSoup, SoupStrainer
 
 
 # THE USELESS PRICE SEARCHER....
-# Функция выбора торговой площадки
 def market_choice(market):
+    """ Marketplace choice.
+    Right now is redundant.
+    """
     # TODO: expand this if possible
     marketplaces = {
                     'Avito': 'https://www.avito.ru/moskva?',
                    }
     if not market:
-        print('You are fucked in marketplace')
+        print('Error in marketplace')
     return marketplaces[market]
 
 
-# Функция выбора предмета поиска
 def search_item(search_term):
-    # For now we consider one word search
+    """ Function to work with user inputted search phrase """
     if not search_term:
-        print("You're fucked")
+        print('Error in search')
         # TODO: Should be an error here
     if ' ' in search_term:
         search_term = search_term.replace(' ', '+')
     return search_term
 
 
+# Leave it here in case of multiple markets
 def amount_of_item(items):
-    # Take a limit, divide it by 50 because Avito shows such amount on 1 page
-    items = ceil(int(items)/50)
+    """ Basically tells how much items per page is there """
+    items = ceil(items/50)
     return items
 
 
 def url_making(market_url, search_term, items):
-    # Make a URL according to chosen marketplace
-    # Make a request
-    # URL = https://www.avito.ru/moskva?p=num&q=text
+    """ Make up a url check if it's working """
     URL = str(market_url + f'p={items}&q={search_term}')
     try:
         page = requests.get(URL, timeout=5)
@@ -44,14 +43,12 @@ def url_making(market_url, search_term, items):
         page.raise_for_status()
         # TODO: test for status codes
     except requests.exceptions.RequestException as e:
-        raise SystemExit(e)     # Break soup_making if error
+        raise SystemExit(e)
     return page
 
 
-# Скрейпинг данных с сайта по запросу
 def soup_making(market_url, search_term, items):
-    # Fill the list
-    # Repeat X times
+    """ Making a soup to collect data """
     price_list = []
     # should use clean 'items' in order to
     # set limit in finding tags, make ceiling right here
@@ -64,45 +61,73 @@ def soup_making(market_url, search_term, items):
         )
         for tag in soup.find_all(True):
             value = tag['content']
+            # Maybe here i just take values and check elsewhere?
             if value.isnumeric():
                 price_list.append(int(value))
     return price_list
 
 
-# WORKING WITH COLLECTED DATA
-
-# Избавляем список от лишних сумм
-def delete_extremes(price_list):
-    m = median(price_list)
-    for price in price_list[:]:
-        if not (m*0.5) <= price <= (m*1.5):
-            price_list.remove(price)
-    return price_list
-
-
-# Установка пределов суммы
-def price_range():
-    # Two values to get affordable price
-    print("Enter minimum price")
-    min_range = input()
-    if min_range is None:
+def price_range(prices):
+    """ Set price limits """
+    min_range, max_range = prices
+    if not min_range:
         min_range = 0
-    print("Enter maximum price")
-    max_range = input()
-    # check for isnumeric()
+    if not max_range:
+        # How to make infinite?
+        max_range = 999999999
     return min_range, max_range
 
 
-# Подсчет средней цены
+def delete_extremes(price_list, prices):
+    """ If search is too far away from average
+    it is probably some other item.
+    This function is made in attempt to show only
+    items that user actually looked for and not
+    the ones that contain search keyword.
+    """
+    price_list = sorted(price_list)
+    min_index = 0
+    max_index = len(price_list)
+    # Sorting by set boundaries
+    for i in price_list:
+        if i >= prices[0]:
+            break
+        else:
+            min_index = price_list.index(i)
+    for i in price_list[::-1]:
+        if i <= prices[1]:
+            break
+        else:
+            max_index = price_list.index(i)
+    price_list = price_list[min_index+1:max_index]
+    # Do i even need it after setting price boundaries?
+    # m = price_list[len(price_list)//2]
+    # for price in price_list[:]:
+    #     if not (m*0.5) <= price <= (m*1.5):
+    #         price_list.remove(price)
+    return price_list
+
+
 def average_price(price_list):
+    # Maybe i don't even need it
     return sum(price_list)/len(price_list)
 
 
-# Самый дешевый, самый дорогой товар и ссылка на него
-def main_parsing(search_term, items, market='Avito'):
+def main_parsing(search_term, items, prices, market='Avito'):
+    # Getting data
     market_url = market_choice(market)
     search_term = search_item(search_term)
+    prices = price_range(prices)
     items = amount_of_item(items)
+
     price_list = soup_making(market_url, search_term, items)
-    price_list = delete_extremes(price_list)
+    price_list = delete_extremes(price_list, prices)
     return price_list
+
+
+
+'''
+Вводишь товар, сколько его проанализировать (сомнительная опция)
+Получаешь эверадж и вводишь прайс-рэндж
+По итогам получаешь 3 самых дешевых и 3 самых дорогих с ссылками?
+'''

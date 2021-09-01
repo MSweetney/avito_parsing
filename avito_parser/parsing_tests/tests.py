@@ -1,30 +1,9 @@
 import unittest
 from avito_parser import main_parsing
 
-'''
-Test list:
-1. market_choice
-2. search_item
-    Enter nothing
-    Enter numbers
-    Enter two options
-    Enter None
-    Enter 0
-    Enter 1
-3. amount_of_items
-    Enter 1
-    Enter 0
-    Enter 50
-    Enter 421
-    Enter None
-    Enter word
-    Enter 1000000000
-    enter 99999999999999
-4. url_making
-    Enter invalid url
-    Enter error 500 (items = 300)
-    Enter wrong search item
-'''
+# THOSE TESTS ARE OLD IGNORE THEM
+# THOSE TESTS ARE OLD IGNORE THEM
+# THOSE TESTS ARE OLD IGNORE THEM
 
 
 class Testing_MarketChoice(unittest.TestCase):

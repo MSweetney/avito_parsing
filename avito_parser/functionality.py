@@ -12,6 +12,7 @@ class PriceParser:
         mainframe = ttk.Frame(root, padding='60 40')
         mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
 
+        # Search term
         self.search_term = StringVar()
         (
             ttk.Label(mainframe, text='Enter your search: ')
@@ -20,23 +21,47 @@ class PriceParser:
         search_term_entry = (
             ttk.Entry(mainframe, width=20, textvariable=self.search_term)
         )
-        search_term_entry.grid(column=2, row=1, sticky=(W, E))
+        search_term_entry.grid(column=2, row=1, columnspan=3, sticky=(W, E))
 
-        self.items = StringVar()
-        self.items.set('50')
+        # Amount of searched items
+        self.items = IntVar()
+        self.items.set(50)
         (
             ttk.Label(mainframe,
                       text='Enter amount of items: ')
             .grid(column=1, row=2, sticky=E)
         )
-        items_entry = ttk.Entry(mainframe, width=10, textvariable=self.items)
-        items_entry.grid(column=2, row=2, sticky=W)
+        items_entry = ttk.Entry(mainframe, width=6, textvariable=self.items)
+        items_entry.grid(column=2, row=2, columnspan=3, sticky=W)
 
+        # Minimum price of search
+        self.price_min = IntVar()
+        (
+            ttk.Label(mainframe, text='Minimum price: ')
+            .grid(column=1, row=3, sticky=E)
+        )
+        price_min_entry = (
+            ttk.Entry(mainframe, width=15, textvariable=self.price_min)
+        )
+        price_min_entry.grid(column=2, row=3, sticky=W)
+
+        # Maximum price of search
+        self.price_max = IntVar()
+        (
+            ttk.Label(mainframe, text='Maximum price: ')
+            .grid(column=3, row=3, sticky=E)
+        )
+        price_max_entry = (
+            ttk.Entry(mainframe, width=15, textvariable=self.price_max)
+        )
+        price_max_entry.grid(column=4, row=3, sticky=W)
+
+        # Start search button
         (
             ttk.Button(mainframe,
                        text='Search',
                        command=self.calculate)
-            .grid(column=2, row=3, sticky=W)
+            .grid(column=2, row=4, sticky=W)
         )
 
         for child in mainframe.winfo_children():
@@ -47,11 +72,10 @@ class PriceParser:
     def calculate(self, *args):
         search = self.search_term.get()
         items = self.items.get()
-        value = main_parsing(search_term=search, items=items)
+        prices = self.price_min.get(), self.price_max.get()
+        # am i stupid?
+        value = main_parsing(search_term=search, items=items, prices=prices)
         InfoWindow(root, value)
-
-    # TODO: Open a new statistic window.
-    # Should show data and allow to make a new search.
 
 
 class InfoWindow:
